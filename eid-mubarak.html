@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Eid ul Adha Mubarak</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Dancing+Script:wght@600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:      #07111F;
+    --gold:    #D4AF37;
+    --gold-l:  #F0D060;
+    --gold-d:  #9A7A18;
+    --emerald: #0F5132;
+    --em-l:    #1A7A4A;
+    --white:   #F5F5F5;
+    --muted:   rgba(245,245,245,0.55);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Cormorant Garamond', serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::-webkit-scrollbar { width: 2px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-d); }
+
+  /* ── LOADING ────────────────────────────── */
+  #loader {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 9999; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 20px;
+    transition: opacity 0.9s ease, visibility 0.9s ease;
+  }
+  #loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .loader-ring {
+    width: 52px; height: 52px; border-radius: 50%;
+    border: 1.5px solid transparent;
+    border-top-color: var(--gold);
+    border-right-color: rgba(212,175,55,0.25);
+    animation: spin 1.6s linear infinite;
+  }
+  .loader-text {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    color: var(--gold); letter-spacing: 0.35em; opacity: 0.5;
+    animation: breathe 1.5s ease-in-out infinite;
+  }
+
+  /* ── AMBIENT CANVAS ─────────────────────── */
+  #ambient {
+    position: fixed; inset: 0; pointer-events: none;
+    z-index: 1; opacity: 0.55;
+  }
+
+  /* ── SECTIONS ───────────────────────────── */
+  section {
+    min-height: 100svh;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden;
+    padding: 60px 24px;
+  }
+
+  /* ── HERO ───────────────────────────────── */
+  #hero {
+    background: radial-gradient(ellipse at 58% 28%, #0D2040 0%, var(--bg) 68%);
+  }
+
+  /* Mosque SVG */
+  #mosque-wrap {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: center;
+    pointer-events: none;
+    animation: mosqueRise 2.5s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+    opacity: 0; transform: translateY(40px);
+  }
+  #mosque-wrap svg { width: min(420px, 95vw); height: auto; }
+
+  /* Moon */
+  .moon {
+    position: absolute; top: 12%; right: 16%;
+    width: clamp(70px,18vw,110px); height: clamp(70px,18vw,110px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 35%, #FFFDE8, #F5E870 40%, #D4C040 100%);
+    box-shadow: 0 0 60px 20px rgba(255,252,180,0.22),
+                0 0 120px 50px rgba(212,175,55,0.10);
+    animation: moonFloat 6s ease-in-out infinite;
+  }
+  /* Moon craters */
+  .moon::before, .moon::after {
+    content: ''; position: absolute; border-radius: 50%;
+    background: rgba(200,180,30,0.18);
+  }
+  .moon::before { width: 28%; height: 28%; top: 22%; left: 28%; }
+  .moon::after  { width: 16%; height: 16%; top: 50%; left: 58%; }
+
+  /* Stars bg */
+  .star-field {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  }
+  .star {
+    position: absolute; background: white; border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite;
+    animation-delay: var(--del);
+    opacity: 0;
+  }
+
+  /* Ground fog */
+  .fog {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 38%;
+    background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+    pointer-events: none; z-index: 3;
+  }
+
+  /* Hero text */
+  #hero-text {
+    position: relative; z-index: 10; text-align: center;
+    margin-top: auto; padding-bottom: 80px;
+    opacity: 0; transform: translateY(28px);
+    animation: fadeUp 1.3s cubic-bezier(0.25,0.46,0.45,0.94) 1.1s forwards;
+  }
+
+  .year-tag {
+    font-family: 'Cinzel', serif; font-size: clamp(10px,2.8vw,12px);
+    color: var(--gold); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 14px; opacity: 0.75;
+  }
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(34px, 9.5vw, 68px);
+    font-weight: 700; line-height: 1.15; margin-bottom: 14px;
+    background: linear-gradient(90deg, var(--gold-d) 0%, var(--gold-l) 40%, var(--gold) 55%, var(--gold-l) 70%, var(--gold-d) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3.5s linear infinite;
+  }
+  .hero-sub {
+    font-size: clamp(16px,4.5vw,20px); font-style: italic;
+    font-weight: 300; color: var(--muted); letter-spacing: 0.04em;
+    margin-top: 8px;
+    opacity: 0;
+    animation: fadeIn 1s ease 2.2s forwards;
+  }
+
+  /* Scroll cue */
+  .scroll-cue {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; margin-top: 36px; cursor: pointer;
+    opacity: 0; animation: fadeIn 1s ease 2.8s forwards;
+    background: none; border: none; color: var(--gold);
+  }
+  .scroll-label {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 0.22em; opacity: 0.6;
+  }
+  .scroll-line {
+    width: 1px; height: 36px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollBob 1.6s ease-in-out infinite;
+  }
+
+  /* Divider lines */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    justify-content: center; margin: 16px 0;
+  }
+  .divider-line {
+    height: 1px; width: 60px;
+  }
+  .divider-dot {
+    width: 5px; height: 5px;
+    background: var(--gold); transform: rotate(45deg);
+  }
+
+  /* ── CALLIGRAPHY ────────────────────────── */
+  #calli {
+    background: radial-gradient(ellipse at 50% 0%, #0E2235 0%, var(--bg) 62%);
+    padding-top: 80px; padding-bottom: 80px;
+  }
+
+  .calli-ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.06);
+    pointer-events: none; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  .calli-glow {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 300px; height: 200px;
+    background: radial-gradient(ellipse, rgba(212,175,55,0.10) 0%, transparent 70%);
+    filter: blur(28px); pointer-events: none;
+  }
+
+  .arabic-text {
+    font-family: 'Amiri', serif;
+    font-size: clamp(72px, 20vw, 120px);
+    direction: rtl; line-height: 1.2;
+    background: linear-gradient(90deg, var(--gold-d) 0%, var(--gold-l) 38%, var(--gold) 52%, var(--gold-l) 66%, var(--gold-d) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px rgba(212,175,55,0.20));
+  }
+
+  .transliteration {
+    font-family: 'Cinzel', serif; font-size: clamp(10px,2.8vw,12px);
+    color: var(--gold); letter-spacing: 0.22em;
+    margin: 8px 0 24px; opacity: 0.65;
+  }
+
+  .calli-quote {
+    font-size: clamp(17px,4.8vw,22px); font-style: italic;
+    font-weight: 300; color: var(--muted);
+    line-height: 1.75; text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .dot-row {
+    display: flex; gap: 8px; justify-content: center; margin-top: 36px;
+  }
+  .dot-row span {
+    border-radius: 50%; background: var(--gold);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  /* ── ENVELOPE ───────────────────────────── */
+  #envelope-section {
+    background: radial-gradient(ellipse at 50% 100%, #0E2235 0%, var(--bg) 58%);
+    min-height: 100svh; padding-bottom: 80px;
+  }
+
+  .section-label {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    color: var(--gold); letter-spacing: 0.28em; opacity: 0.55;
+    margin-bottom: 36px; position: relative; z-index: 10;
+  }
+
+  .envelope-outer {
+    width: min(340px, 88vw);
+    position: relative; z-index: 10;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .envelope-outer.opened { cursor: default; }
+
+  .env-body {
+    width: 100%; height: 210px; border-radius: 4px 4px 14px 14px;
+    background: linear-gradient(155deg, #183018 0%, var(--emerald) 45%, #183A18 100%);
+    border: 1px solid rgba(212,175,55,0.28);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55),
+                0 0 35px rgba(212,175,55,0.07),
+                inset 0 1px 0 rgba(212,175,55,0.18);
+    position: relative; overflow: hidden;
+  }
+
+  /* Paper texture overlay */
+  .env-body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg,
+        rgba(212,175,55,0.025) 0px,
+        rgba(212,175,55,0.025) 1px,
+        transparent 1px, transparent 14px);
+    pointer-events: none;
+  }
+
+  /* Flap fold lines from corners */
+  .env-lines {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+  .env-lines::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(135deg, rgba(212,175,55,0.07) 49.6%, transparent 50.4%),
+      linear-gradient(225deg, rgba(212,175,55,0.07) 49.6%, transparent 50.4%);
+  }
+
+  /* Top flap */
+  .env-flap {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 108px;
+    transform-origin: top center;
+    transform-style: preserve-3d;
+    transition: transform 0.85s cubic-bezier(0.4,0,0.2,1);
+    z-index: 10;
+    background: linear-gradient(175deg, #1A3A1A 0%, var(--emerald) 100%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    border-bottom: 1px solid rgba(212,175,55,0.18);
+  }
+  .env-flap.open { transform: rotateX(-180deg); }
+
+  /* Wax seal */
+  .env-seal {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 54px; height: 54px; border-radius: 50%;
+    background: radial-gradient(circle at 36% 36%, var(--gold-l), var(--gold-d));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.45),
+                0 0 22px rgba(212,175,55,0.38);
+    z-index: 15; cursor: pointer;
+    animation: sealPulse 2.4s ease-in-out infinite;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .env-seal.hide { opacity: 0; transform: translate(-50%,-50%) scale(0); pointer-events: none; }
+  .env-seal-glyph {
+    font-family: 'Amiri', serif; font-size: 20px;
+    color: var(--bg); font-weight: 700; line-height: 1;
+  }
+
+  /* Tap hint */
+  .env-hint {
+    position: absolute; bottom: 14px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif; font-size: 10px;
+    color: var(--gold); letter-spacing: 0.2em; opacity: 0.55;
+    animation: breathe 2.2s ease-in-out infinite;
+    transition: opacity 0.4s;
+    z-index: 5; white-space: nowrap;
+  }
+  .env-hint.hide { opacity: 0; }
+
+  /* Glow on open */
+  .env-glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(212,175,55,0.13) 0%, transparent 70%);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.7s ease 0.45s;
+  }
+  .env-glow.show { opacity: 1; }
+
+  /* Card rising from envelope */
+  .card-wrap {
+    position: absolute;
+    top: 14px; left: 10px; right: 10px;
+    transform: translateY(0px) scale(0.93);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    transition: transform 0.95s cubic-bezier(0.25,0.46,0.45,0.94) 0.5s,
+                opacity    0.95s cubic-bezier(0.25,0.46,0.45,0.94) 0.5s;
+  }
+  .card-wrap.show {
+    transform: translateY(-158px) scale(1);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Paper card */
+  .card {
+    background: linear-gradient(148deg, #F9F4EB 0%, #F0E8D5 55%, #F5EDD8 100%);
+    border-radius: 8px;
+    padding: 28px 22px 24px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.65),
+                0 0 40px rgba(212,175,55,0.18);
+    border: 1px solid rgba(212,175,55,0.45);
+    position: relative; overflow: hidden;
+  }
+
+  /* Ruled lines on paper */
+  .card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(
+        transparent,
+        transparent 26px,
+        rgba(0,0,0,0.04) 26px,
+        rgba(0,0,0,0.04) 27px
+      );
+    top: 60px;
+  }
+
+  .card-ornament {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center; margin-bottom: 18px;
+  }
+  .card-ornament-line {
+    height: 1px; flex: 1;
+  }
+  .card-ornament-star { color: var(--gold-d); font-size: 13px; }
+
+  .card-body {
+    font-size: clamp(15px,4.2vw,18px); color: #2A1F0A;
+    line-height: 1.82; text-align: center;
+    font-weight: 400; margin-bottom: 20px;
+    position: relative; z-index: 2;
+  }
+
+  .card-divider {
+    height: 1px; margin-bottom: 14px;
+    background: linear-gradient(90deg, transparent, rgba(154,122,24,0.5), transparent);
+    position: relative; z-index: 2;
+  }
+
+  .card-sig {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(22px,6vw,28px);
+    color: var(--emerald); text-align: right;
+    padding-right: 6px; position: relative; z-index: 2;
+  }
+
+  /* Burst particles */
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: var(--gold); pointer-events: none;
+    z-index: 30; opacity: 0;
+  }
+
+  /* Footer */
+  .site-footer {
+    position: absolute; bottom: 24px;
+    font-family: 'Cinzel', serif; font-size: 10px;
+    color: rgba(212,175,55,0.2); letter-spacing: 0.22em;
+    text-align: center; z-index: 10;
+  }
+
+  /* ── REVEAL ON SCROLL ───────────────────── */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.9s cubic-bezier(0.25,0.46,0.45,0.94),
+                transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── KEYFRAMES ──────────────────────────── */
+  @keyframes spin      { to { transform: rotate(360deg); } }
+  @keyframes breathe   { 0%,100%{opacity:0.3} 50%{opacity:0.9} }
+  @keyframes shimmer   { 0%{background-position:-200% center} 100%{background-position:200% center} }
+  @keyframes fadeUp    { to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn    { to { opacity:1; } }
+  @keyframes twinkle   { 0%,100%{opacity:0} 50%{opacity:0.85} }
+  @keyframes moonFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes scrollBob { 0%,100%{opacity:0.7;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
+  @keyframes mosqueRise { to { opacity:1; transform:translateY(0); } }
+  @keyframes sealPulse {
+    0%,100%{box-shadow:0 4px 18px rgba(0,0,0,0.45),0 0 22px rgba(212,175,55,0.38)}
+    50%    {box-shadow:0 4px 18px rgba(0,0,0,0.45),0 0 42px rgba(212,175,55,0.70)}
+  }
+  @keyframes dotPulse  { 0%,100%{opacity:0.2} 50%{opacity:0.9} }
+  @keyframes particleBurst {
+    0%  { transform: translate(var(--tx),var(--ty)) scale(1); opacity:1; }
+    100%{ transform: translate(calc(var(--tx)*3.5), calc(var(--ty)*3.5)) scale(0); opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <p class="loader-text">LOADING</p>
+</div>
+
+<!-- AMBIENT PARTICLES -->
+<canvas id="ambient"></canvas>
+
+<!-- ═══════════════════════════════════
+     SECTION 1 — HERO
+═══════════════════════════════════ -->
+<section id="hero">
+
+  <!-- Star field -->
+  <div class="star-field" id="stars"></div>
+
+  <!-- Moon -->
+  <div class="moon"></div>
+
+  <!-- Fog -->
+  <div class="fog"></div>
+
+  <!-- Mosque SVG silhouette -->
+  <div id="mosque-wrap">
+    <svg viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1A2F48"/>
+          <stop offset="100%" stop-color="#0D1F30"/>
+        </linearGradient>
+        <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#F0D060"/>
+          <stop offset="100%" stop-color="#9A7A18"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="softglow">
+          <feGaussianBlur stdDeviation="6" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Ground -->
+      <rect x="0" y="240" width="420" height="20" fill="#0A1828"/>
+      <rect x="30" y="234" width="360" height="8" fill="#0D1E2F" rx="1"/>
+
+      <!-- === LEFT MINARET === -->
+      <rect x="42" y="80" width="22" height="162" rx="2" fill="url(#wallGrad)"/>
+      <!-- minaret balcony -->
+      <rect x="36" y="144" width="34" height="7" rx="1" fill="url(#goldGrad)" filter="url(#glow)"/>
+      <!-- minaret upper -->
+      <rect x="46" y="60" width="14" height="88" rx="2" fill="#1A2F48"/>
+      <!-- minaret cap -->
+      <polygon points="53,12 40,58 66,58" fill="url(#wallGrad)"/>
+      <!-- minaret tip -->
+      <line x1="53" y1="4" x2="53" y2="12" stroke="url(#goldGrad)" stroke-width="2"/>
+      <!-- crescent left -->
+      <path d="M49,6 A5,5 0 1,1 57,6" stroke="url(#goldGrad)" stroke-width="1.8" fill="none" filter="url(#glow)"/>
+      <line x1="49" y1="6" x2="57" y2="6" stroke="url(#goldGrad)" stroke-width="1.2"/>
+
+      <!-- === RIGHT MINARET === -->
+      <rect x="356" y="80" width="22" height="162" rx="2" fill="url(#wallGrad)"/>
+      <rect x="350" y="144" width="34" height="7" rx="1" fill="url(#goldGrad)" filter="url(#glow)"/>
+      <rect x="360" y="60" width="14" height="88" rx="2" fill="#1A2F48"/>
+      <polygon points="367,12 354,58 380,58" fill="url(#wallGrad)"/>
+      <line x1="367" y1="4" x2="367" y2="12" stroke="url(#goldGrad)" stroke-width="2"/>
+      <path d="M363,6 A5,5 0 1,1 371,6" stroke="url(#goldGrad)" stroke-width="1.8" fill="none" filter="url(#glow)"/>
+      <line x1="363" y1="6" x2="371" y2="6" stroke="url(#goldGrad)" stroke-width="1.2"/>
+
+      <!-- === MAIN BUILDING === -->
+      <rect x="85" y="150" width="250" height="92" rx="2" fill="url(#wallGrad)"/>
+
+      <!-- Arched windows -->
+      <path d="M120,200 L120,240 A18,18 0 0,0 156,240 L156,200 Z" fill="#0A1626"/>
+      <path d="M138,188 A18,18 0 0,1 156,206 L156,200 L120,200 L120,206 A18,18 0 0,1 138,188 Z" fill="#0A1626"/>
+      <rect x="120" y="200" width="36" height="40" fill="#0A1626"/>
+
+      <path d="M192,200 L192,240 A18,18 0 0,0 228,240 L228,200 Z" fill="#0A1626"/>
+      <path d="M210,188 A18,18 0 0,1 228,206 L228,200 L192,200 L192,206 A18,18 0 0,1 210,188 Z" fill="#0A1626"/>
+      <rect x="192" y="200" width="36" height="40" fill="#0A1626"/>
+
+      <path d="M264,200 L264,240 A18,18 0 0,0 300,240 L300,200 Z" fill="#0A1626"/>
+      <path d="M282,188 A18,18 0 0,1 300,206 L300,200 L264,200 L264,206 A18,18 0 0,1 282,188 Z" fill="#0A1626"/>
+      <rect x="264" y="200" width="36" height="40" fill="#0A1626"/>
+
+      <!-- === SMALL SIDE DOMES === -->
+      <!-- Left small dome -->
+      <rect x="108" y="128" width="58" height="26" rx="1" fill="url(#wallGrad)"/>
+      <ellipse cx="137" cy="128" rx="30" ry="20" fill="url(#wallGrad)"/>
+      <!-- Left dome tip -->
+      <line x1="137" y1="100" x2="137" y2="110" stroke="url(#goldGrad)" stroke-width="1.5"/>
+      <path d="M133,102 A5,4 0 1,1 141,102" stroke="url(#goldGrad)" stroke-width="1.5" fill="none" filter="url(#glow)"/>
+
+      <!-- Right small dome -->
+      <rect x="254" y="128" width="58" height="26" rx="1" fill="url(#wallGrad)"/>
+      <ellipse cx="283" cy="128" rx="30" ry="20" fill="url(#wallGrad)"/>
+      <line x1="283" y1="100" x2="283" y2="110" stroke="url(#goldGrad)" stroke-width="1.5"/>
+      <path d="M279,102 A5,4 0 1,1 287,102" stroke="url(#goldGrad)" stroke-width="1.5" fill="none" filter="url(#glow)"/>
+
+      <!-- === MAIN DOME === -->
+      <rect x="168" y="120" width="84" height="34" rx="2" fill="url(#wallGrad)"/>
+      <!-- Drum -->
+      <rect x="172" y="112" width="76" height="12" rx="2" fill="#1A2F48"/>
+      <!-- Dome -->
+      <ellipse cx="210" cy="112" rx="42" ry="56" fill="url(#wallGrad)" clip-path="url(#domeClip)"/>
+      <clipPath id="domeClip">
+        <rect x="168" y="55" width="84" height="60"/>
+      </clipPath>
+      <!-- Dome gold band -->
+      <rect x="168" y="110" width="84" height="4" fill="url(#goldGrad)" opacity="0.55" filter="url(#glow)"/>
+      <!-- Dome finial -->
+      <line x1="210" y1="38" x2="210" y2="56" stroke="url(#goldGrad)" stroke-width="2" filter="url(#glow)"/>
+      <!-- Main crescent -->
+      <path d="M203,28 A10,10 0 1,1 217,28" stroke="url(#goldGrad)" stroke-width="2.2" fill="none" filter="url(#softglow)"/>
+      <line x1="203" y1="28" x2="217" y2="28" stroke="url(#goldGrad)" stroke-width="1.6" filter="url(#glow)"/>
+
+      <!-- Lights in windows (warm glow) -->
+      <rect x="121" y="201" width="34" height="38" fill="rgba(212,175,55,0.06)" rx="1"/>
+      <rect x="193" y="201" width="34" height="38" fill="rgba(212,175,55,0.06)" rx="1"/>
+      <rect x="265" y="201" width="34" height="38" fill="rgba(212,175,55,0.06)" rx="1"/>
+    </svg>
+  </div>
+
+  <!-- Hero text -->
+  <div id="hero-text">
+    <p class="year-tag">1446 Hijri</p>
+    <div class="divider" style="margin-bottom:14px;">
+      <div class="divider-line" style="background:linear-gradient(90deg,transparent,var(--gold))"></div>
+      <div class="divider-dot"></div>
+      <div class="divider-line" style="background:linear-gradient(90deg,var(--gold),transparent)"></div>
+    </div>
+    <h1 class="hero-title">Eid‑ul‑Adha<br>Mubarak</h1>
+    <div class="divider">
+      <div class="divider-line" style="background:linear-gradient(90deg,transparent,var(--gold))"></div>
+      <div class="divider-dot"></div>
+      <div class="divider-line" style="background:linear-gradient(90deg,var(--gold),transparent)"></div>
+    </div>
+    <p class="hero-sub">A special message awaits you</p>
+
+    <button class="scroll-cue" onclick="document.getElementById('calli').scrollIntoView({behavior:'smooth'})">
+      <span class="scroll-label">SCROLL</span>
+      <div class="scroll-line"></div>
+    </button>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SECTION 2 — CALLIGRAPHY
+═══════════════════════════════════ -->
+<section id="calli">
+  <div class="calli-ring" style="width:360px;height:360px;"></div>
+  <div class="calli-ring" style="width:500px;height:500px;"></div>
+  <div class="calli-glow"></div>
+
+  <div style="position:relative;z-index:5;text-align:center;max-width:500px;">
+
+    <!-- Top ornament -->
+    <div class="reveal divider" style="margin-bottom:32px;">
+      <div class="divider-line" style="background:linear-gradient(90deg,transparent,var(--gold))"></div>
+      <div class="divider-dot"></div>
+      <div class="divider-line" style="background:linear-gradient(90deg,var(--gold),transparent)"></div>
+    </div>
+
+    <!-- Arabic -->
+    <div class="reveal" style="transition-delay:0.15s">
+      <div class="arabic-text">عيد مبارك</div>
+    </div>
+
+    <!-- Transliteration -->
+    <p class="transliteration reveal" style="transition-delay:0.3s">EID MUBARAK</p>
+
+    <!-- Mid ornament -->
+    <div class="reveal divider" style="margin-bottom:28px;transition-delay:0.4s;">
+      <div class="divider-line" style="background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35))"></div>
+      <div style="width:4px;height:4px;border-radius:50%;background:rgba(212,175,55,0.35);flex-shrink:0;"></div>
+      <div class="divider-line" style="background:linear-gradient(90deg,rgba(212,175,55,0.35),transparent)"></div>
+    </div>
+
+    <!-- Translation -->
+    <p class="calli-quote reveal" style="transition-delay:0.55s;">
+      May your sacrifices be accepted<br>
+      and your heart be filled with peace.
+    </p>
+
+    <!-- Animated dots -->
+    <div class="dot-row reveal" style="transition-delay:0.7s;">
+      <span style="width:4px;height:4px;animation-delay:0s;"></span>
+      <span style="width:4px;height:4px;animation-delay:0.25s;"></span>
+      <span style="width:8px;height:8px;animation-delay:0.5s;"></span>
+      <span style="width:4px;height:4px;animation-delay:0.75s;"></span>
+      <span style="width:4px;height:4px;animation-delay:1s;"></span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════
+     SECTION 3 — ENVELOPE
+═══════════════════════════════════ -->
+<section id="envelope-section">
+
+  <p class="section-label reveal">A GIFT FOR YOU</p>
+
+  <div class="envelope-outer reveal" id="envelopeWrap" style="transition-delay:0.2s;" onclick="openEnvelope()">
+
+    <!-- Burst particles container -->
+    <div id="burst" style="position:absolute;inset:0;pointer-events:none;z-index:40;"></div>
+
+    <!-- Envelope body -->
+    <div class="env-body" id="envBody">
+      <div class="env-lines"></div>
+
+      <!-- Top flap -->
+      <div class="env-flap" id="envFlap"></div>
+
+      <!-- Wax seal -->
+      <div class="env-seal" id="envSeal">
+        <span class="env-seal-glyph">ع</span>
+      </div>
+
+      <!-- Tap hint -->
+      <div class="env-hint" id="envHint">TAP TO OPEN</div>
+
+      <!-- Gold glow (hidden until open) -->
+      <div class="env-glow" id="envGlow"></div>
+    </div>
+
+    <!-- Card (hidden until open) -->
+    <div class="card-wrap" id="cardWrap">
+      <div class="card">
+        <div class="card-ornament">
+          <div class="card-ornament-line" style="background:linear-gradient(90deg,transparent,var(--gold-d))"></div>
+          <span class="card-ornament-star">✦</span>
+          <div class="card-ornament-line" style="background:linear-gradient(90deg,var(--gold-d),transparent)"></div>
+        </div>
+        <p class="card-body">
+          May Allah bless your home<br>
+          with peace, barakah,<br>
+          and happiness.
+        </p>
+        <div class="card-divider"></div>
+        <p class="card-sig">— Your's Oleoooo</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p id="env-caption" style="margin-top:18px;font-style:italic;font-size:14px;color:rgba(245,245,245,0.3);position:relative;z-index:10;transition:opacity 0.4s;">
+    A message sealed with warmth
+  </p>
+
+  <p id="eid-closing" style="margin-top:220px;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:rgba(245,245,245,0.3);position:relative;z-index:10;opacity:0;transition:opacity 1s ease 2.2s;">
+    Eid Mubarak 🌙
+  </p>
+
+  <p class="site-footer">EID UL ADHA &nbsp;•&nbsp; 1446H</p>
+</section>
+
+
+<script>
+/* ─── LOADER ─────────────────────────────── */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+  }, 1800);
+});
+
+/* ─── AMBIENT PARTICLES ──────────────────── */
+(function() {
+  const canvas = document.getElementById('ambient');
+  const ctx = canvas.getContext('2d');
+  let raf, W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = Array.from({ length: 90 }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 1.4 + 0.25,
+    vy: -(Math.random() * 0.28 + 0.06),
+    vx: (Math.random() - 0.5) * 0.12,
+    op: Math.random() * 0.55 + 0.08,
+    ph: Math.random() * Math.PI * 2
+  }));
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.007;
+    for (const p of particles) {
+      p.y += p.vy; p.x += p.vx;
+      if (p.y < -4) { p.y = H + 4; p.x = Math.random() * W; }
+      const tw = Math.sin(t + p.ph) * 0.3 + 0.7;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(212,175,55,${p.op * tw})`;
+      ctx.fill();
+    }
+    raf = requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── STAR FIELD ─────────────────────────── */
+(function() {
+  const container = document.getElementById('stars');
+  const count = 80;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    s.style.cssText = `
+      width: ${size}px; height: ${size}px;
+      top: ${Math.random() * 85}%;
+      left: ${Math.random() * 100}%;
+      --dur: ${2 + Math.random() * 4}s;
+      --del: ${Math.random() * 5}s;
+    `;
+    container.appendChild(s);
+  }
+})();
+
+/* ─── SCROLL REVEAL ──────────────────────── */
+(function() {
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '-60px' });
+  els.forEach(el => io.observe(el));
+})();
+
+/* ─── ENVELOPE OPEN ──────────────────────── */
+let envelopeOpened = false;
+
+function openEnvelope() {
+  if (envelopeOpened) return;
+  envelopeOpened = true;
+
+  // Flip flap
+  document.getElementById('envFlap').classList.add('open');
+
+  // Hide seal & hint
+  setTimeout(() => {
+    document.getElementById('envSeal').classList.add('hide');
+    document.getElementById('envHint').classList.add('hide');
+  }, 120);
+
+  // Show glow
+  setTimeout(() => {
+    document.getElementById('envGlow').classList.add('show');
+  }, 420);
+
+  // Particle burst
+  burst();
+
+  // Rise card
+  setTimeout(() => {
+    document.getElementById('cardWrap').classList.add('show');
+    document.getElementById('envelopeWrap').classList.add('opened');
+  }, 540);
+
+  // Fade caption
+  setTimeout(() => {
+    document.getElementById('env-caption').style.opacity = '0';
+  }, 600);
+
+  // Show closing message
+  setTimeout(() => {
+    document.getElementById('eid-closing').style.opacity = '1';
+  }, 100); // CSS transition handles the delay via transition-delay
+}
+
+function burst() {
+  const container = document.getElementById('burst');
+  const cx = container.offsetWidth / 2;
+  const cy = container.offsetHeight / 2;
+  const count = 22;
+
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (i / count) * 360;
+    const rad   = angle * Math.PI / 180;
+    const dist  = 35 + Math.random() * 55;
+    const size  = 2 + Math.random() * 4;
+    const tx = Math.cos(rad) * dist;
+    const ty = Math.sin(rad) * dist;
+
+    p.style.cssText = `
+      width: ${size}px; height: ${size}px;
+      left: ${cx - size/2}px; top: ${cy - size/2}px;
+      --tx: ${tx}px; --ty: ${ty}px;
+      animation: particleBurst 1.3s cubic-bezier(0.2,0,0.8,1) forwards;
+      animation-delay: ${Math.random() * 0.12}s;
+    `;
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1600);
+  }
+}
+</script>
+</body>
+</html>
